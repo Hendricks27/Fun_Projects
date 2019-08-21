@@ -15,6 +15,8 @@ var GUIContainer = document.getElementById("GUI");
 * 8 9 4  5 0 7  6 0 3
 * 7 2 5  8 3 6  1 4 0
 * */
+
+// Simple
 var testingSudokuSet = [undefined, 7, 8, undefined, undefined, undefined, undefined, undefined, undefined,
     undefined, undefined, 1, undefined, undefined, 3, undefined, undefined, undefined,
     undefined, undefined, undefined, undefined, 9, undefined, 5, 6, undefined,
@@ -26,6 +28,7 @@ var testingSudokuSet = [undefined, 7, 8, undefined, undefined, undefined, undefi
     7, 2, 5, 8, 3, 6, 1, 4, undefined
 ];
 
+// Hard, 12s
 var testingSudokuSet2 = [
     undefined,undefined,undefined,8,3,5,undefined,undefined,1,
     undefined,9,undefined,undefined,undefined,2,undefined,undefined,undefined,
@@ -37,10 +40,40 @@ var testingSudokuSet2 = [
     8,undefined,4,undefined,undefined,undefined,undefined,7,undefined,
     undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,
 ];
-console.log(testingSudokuSet2.length);
+
+// Hard, 5s
+var testingSudokuSet3 = [
+    undefined,undefined,undefined,undefined,7,undefined,undefined,undefined,undefined,
+    9,undefined,undefined,3,undefined,undefined,6,8,undefined,
+    6,1,undefined,4,undefined,undefined,3,undefined,undefined,
+    5,undefined,undefined,undefined,3,undefined,7,undefined,undefined,
+    1,7,undefined,undefined,undefined,undefined,undefined,undefined,2,
+    undefined,undefined,6,7,undefined,2,undefined,1,undefined,
+    undefined,undefined,undefined,undefined,undefined,4,undefined,undefined,undefined,
+    7,4,1,8,undefined,3,undefined,5,6,
+    3,undefined,9,5,undefined,7,undefined,4,undefined
+];
+
+// Hard takes a long time
+var testingSudokuSet4 = [
+    undefined,undefined,undefined,7,undefined,undefined,8,undefined,undefined,
+    undefined,undefined,undefined,undefined,4,undefined,undefined,3,undefined,
+    undefined,undefined,undefined,undefined,undefined,9,undefined,undefined,1,
+    6,undefined,undefined,5,undefined,undefined,undefined,undefined,undefined,
+    undefined,1,undefined,undefined,3,undefined,undefined,4,undefined,
+    undefined,undefined,5,undefined,undefined,1,undefined,undefined,7,
+    5,undefined,undefined,2,undefined,undefined,6,undefined,undefined,
+    undefined,3,undefined,undefined,8,undefined,undefined,9,undefined,
+    undefined,undefined,7,undefined,undefined,undefined,undefined,undefined,2
+];
+
+console.log(testingSudokuSet4.length);
 
 
 var SudokuDataset = function (data) {
+    var timeMod = new Date();
+    var startTimestamp = timeMod.getTime();
+
 
     var originalData = JSON.parse(JSON.stringify(data));
     var internalData = [];
@@ -62,7 +95,7 @@ var SudokuDataset = function (data) {
         var output = [];
         for (var i = 0; i<=80 ; i++){
             var d = getByIndex(i);
-            console.log([i, d]);
+            // console.log([i, d]);
             if (Array.isArray(d)){
                 output.push("?");
             }else{
@@ -87,8 +120,6 @@ var SudokuDataset = function (data) {
         }
         return s
     };
-
-
 
 
 
@@ -228,12 +259,25 @@ var SudokuDataset = function (data) {
         return false
     };
 
-    var convertAllOnlyPossibleValueToInt = function () {
+    var convertAllOnlyPossibleValueToIntOld = function () {
         var count = 0;
         while (convertJustOneOnlyPossibleValueToInt()){
             count+=1;
         }
         return count
+    };
+
+    var convertAllOnlyPossibleValueToInt = function () {
+        var changed = false;
+        for (var i = 0; i<=80; i++){
+            if (Array.isArray(getByIndex(i))){
+                if (getByIndex(i).length === 1){
+                    setDataAtIndex(i, getByIndex(i)[0]);
+                    changed = true;
+                }
+            }
+        }
+        return changed
     };
 
     var reduceImpossibleValueAtIndexI = function (i) {
@@ -261,42 +305,204 @@ var SudokuDataset = function (data) {
             reduceImpossibleValueAtIndexI(i);
         }
         //convertAllOnlyPossibleValueToInt();
+    };
 
+    var scanForInvalidValue = function () {
+        for (var i = 0; i<=80; i++){
+            if (Array.isArray(getByIndex(i))){
+                if (getByIndex(i).length === 0){
+                    return true
+                }
+            }
+        }
+        return false
+    };
+
+    var solved = function () {
+        for (var i = 0; i<=80; i++){
+            if (Array.isArray(getByIndex(i))){
+                if (getByIndex(i).length === 1){
+
+                }else{
+                    return false
+                }
+            }
+        }
+        return true
+    };
+
+    var correct = function () {
+        for (var i = 0; i<=80; i++){
+            var d = getByIndex(i);
+            if (!Array.isArray(d)){
+                var rowNum = index2row(i);
+                var colNum = index2col(i);
+                var blockNum = index2block(i);
+
+                if (getRow(rowNum).filter(x => x==d).length > 1){
+                    // console.log([rowNum, colNum]);
+                    return false
+                }
+
+                if (getCol(colNum).filter(x => x==d).length > 1){
+                    // console.log([rowNum, colNum]);
+                    return false
+                }
+
+                if (getBlock(blockNum).filter(x => x==d).length > 1){
+                    // console.log([rowNum, colNum]);
+                    return false
+                }
+            }
+        }
+
+        return true
     };
 
     var simpleScan = function () {
-        for (var i =0; i<70; i++){
+        for (var i =0; i<80; i++){
             reduceAllImpossibleValue();
             convertAllOnlyPossibleValueToInt();
         }
+    };
+
+    var moveLevel = 0;
+    var currentMoves = [];
+    var invalidMoves = {};
+
+    var getShortestOption = function () {
+        var shortestOption = 9;
+        for (var i = 0; i<=80; i++){
+            var d = getByIndex(i);
+            if (Array.isArray(d)){
+                if (d.length == 0 ){
+                    console.log("...");
+                }
+                if (d.length < shortestOption){
+                    shortestOption = d.length;
+                }
+            }
+        }
+        return shortestOption
+    };
+
+
+    var guessNextOne = function (shortestOption, chooseIndex) {
+
+        for (var i = 0; i<=80; i++){
+            var d = getByIndex(i);
+            if (Array.isArray(d)){
+                if (d.length === shortestOption){
+
+                    setDataAtIndex(i, d[chooseIndex]);
+                    break;
+                }
+            }
+        }
+        return i
+    };
+
+    var tryTimes = 0;
+    var level = 0;
+    var advancedTry = function () {
+        //console.log([tryTimes, level]);
+
+        if (solved()){
+            if (correct()){
+                // console.log("Nail it");
+                return true
+            }
+            return false
+        }
+        else if (scanForInvalidValue()){
+            return false
+        }
+        else {
+            tryTimes += 1;
+            if (tryTimes > 5000){
+                // console.log("Too many wrong attempt");
+                // return true;
+                throw "Too many wrong attempt"
+            }
+
+            simpleScan();
+
+            var thisTimeInitialData = JSON.stringify(internalData);
+            var len = getShortestOption();
+            level += 1;
+
+            for (var i=0; i<len; i++){
+                var x = guessNextOne(len, i);
+                simpleScan();
+
+                // console.log([x,": " ,i,"/",len]);
+                var res = advancedTry();
+                if (res){
+                    return true
+                }else{
+                    internalData = JSON.parse(thisTimeInitialData)
+                }
+            }
+
+            level -= 1;
+            // console.log("hmmmm");
+            return false
+        }
+    };
+
+    var resultCheck = function () {
+        var newDate = new Date();
+        var timePassed = -timeMod.getTime()+newDate.getTime();
+        timePassed = timePassed/1000;
+        timePassed.toString();
+        var log = "Solve: " + solved() + "\nCorrect: " + correct() + "\nTime: " + timePassed + "s\nTried: "+ tryTimes + " times";
+
+        console.log(log);
+    };
+
+    var debug = function () {
+        var c = 1;
+        var x = [];
+        for (var i = 0; i<=80; i++){
+            var d = getByIndex(i);
+            console.log([i,d]);
+            if (Array.isArray(d)){
+                c = c * d.length;
+                x.push(d.length);
+            }
+        }
+        // console.log(x);
     };
 
     function logToHTML() {
         GUIContainer.innerText = outputData();
     }
 
-    //logToHTML();
     simpleScan();
 
-    setDataAtIndex(0,2);
-    simpleScan();
-
-
-
+    if ( !solved() ){
+        advancedTry();
+    }
     logToHTML();
 
 
-    // Code testing
-    var t1 = coordinates2index([4,5]);
-    var t2 = index2coordinates(t1);
+    resultCheck();
+
+
+
 
     return {
-
+        simpleScan: simpleScan,
+        guessNextOne: guessNextOne,
+        logToHTML: logToHTML,
+        scanForInvalidValue: scanForInvalidValue,
+        debug: debug,
+        solved: solved
     }
 };
 
 
-SudokuDataset(testingSudokuSet2);
+var a = SudokuDataset(testingSudokuSet2);
 
 
 
