@@ -67,29 +67,209 @@ var testingSudokuSet4 = [
     undefined,undefined,7,undefined,undefined,undefined,undefined,undefined,2
 ];
 
-console.log(testingSudokuSet4.length);
+var t = [
+    8,undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,
+    undefined,undefined,3,6,undefined,undefined,undefined,undefined,undefined,
+    undefined,7,undefined,undefined,9,undefined,2,undefined,undefined,
+
+    undefined,5,undefined,undefined,undefined,7,undefined,undefined,undefined,
+    undefined,undefined,undefined,undefined,4,5,7,undefined,undefined,
+    undefined,undefined,undefined,1,undefined,undefined,undefined,3,undefined,
+
+    undefined,undefined,1,undefined,undefined,undefined,undefined,6,8,
+    undefined,undefined,8,5,undefined,undefined,undefined,1,undefined,
+    undefined,9,undefined,undefined,undefined,undefined,4,undefined,undefined,
+];
+
+var SudokuDataset = function () {
+
+    // Basic function
+    var getTime = function () {
+        var timeMod = new Date();
+        var timestamp = timeMod.getTime();
+
+        return timestamp
+    };
+    var startTimestamp = getTime();
+    var timePassed;
 
 
-var SudokuDataset = function (data) {
-    var timeMod = new Date();
-    var startTimestamp = timeMod.getTime();
+    // Display part
+
+    // display div ID
+    var GUIID = "";
+    var root = "";
+    var statusBar;
+    var vues = [];
+
+    var indexToDomID = function (i) {
+        return GUIID + "_unit_" + i;
+    };
+
+    var GUIInit = function (id) {
+        root = document.getElementById(id);
+        vues = [];
+
+        var inputField = document.createElement("div");
+        inputField.setAttribute("style", "");
+        root.appendChild(inputField);
+
+        for (var i=0; i<81; i++){
+            var unit = document.createElement("input");
+            var domID = indexToDomID(i);
+            // unit.setAttribute("", "");
+            unit.setAttribute("type", "text");
+            unit.setAttribute("min", "1");
+            unit.setAttribute("max", "9");
+            unit.setAttribute("step", "1");
+            unit.setAttribute("maxlength", "1");
+
+            unit.setAttribute("id", domID);
+            //unit.setAttribute("align", "center");
+
+            unit.setAttribute("v-model", "num");
+
+            if ([0,2,4,6,8].includes(index2block(i))){
+                unit.setAttribute("style", "background-color: orange; color: white; " +
+                    "width: 30px; height: 30px; border-color: white;" +
+                    "font-size: 18px; text-align: center;"
+                );
+            }
+            else{
+                unit.setAttribute("style", "background-color: grey; color: white; " +
+                    "width: 30px; height: 30px; border-color: white;" +
+                    "font-size: 18px; text-align: center;"
+                );
+            }
+
+            // unit.setAttribute("v-bind", "");
 
 
-    var originalData = JSON.parse(JSON.stringify(data));
+            inputField.appendChild(unit);
+
+            if ((i+1)%9 === 0){
+                inputField.appendChild(document.createElement("br"));
+            }
+
+            var vueApp = new Vue({
+                el: "#"+domID,
+                data: {
+                    "num": undefined
+                }
+            });
+            vues.push(vueApp)
+
+        }
+
+        var button = document.createElement("button");
+        button.innerText = "Calculate!";
+        // button.setAttribute("", "");
+        button.setAttribute("style", "");
+        button.onclick = calculate;
+
+
+
+        function testCase(x, name) {
+            var button2 = document.createElement("button");
+            button2.innerText = "Test case: "+name;
+            // button.setAttribute("", "");
+            button2.setAttribute("style", "");
+            button2.onclick = function () {
+                setData(x);
+            };
+            root.appendChild(button2);
+        }
+        testCase(testingSudokuSet, "Simple");
+        testCase(testingSudokuSet3, "Moderate");
+        testCase(testingSudokuSet4, "Hard");
+        root.appendChild(document.createElement("br"));
+
+
+        root.appendChild(button);
+
+        statusBar = document.createElement("p");
+
+        statusChange("Fill partially and try calculate!");
+        root.appendChild(statusBar);
+
+    };
+
+    var statusChange = function (msg) {
+        statusBar.innerText = msg;
+    };
+
+    var calculate = function () {
+        logToHTML();
+        var temp = outputAllData2Array();
+        if (temp.filter(x => x == undefined).length > 60){
+            alert("Please provide more values");
+            return false
+        }
+
+        autofill();
+    };
+
+    var setVueDataAtIndex = function (i,d) {
+        vues[i].num = d;
+    };
+
+    var getVueDataAtIndex = function (i) {
+        var a = vues[i].num;
+        a = parseInt(a);
+
+        if ([1,2,3,4,5,6,7,8,9].includes(a)){
+            return a
+        }
+        else{
+            return undefined
+        }
+
+    };
+
+    var outputAllData2Array = function () {
+        var res = [];
+        for (var i=0; i<81; i++){
+            res.push(getVueDataAtIndex(i));
+        }
+        return res
+    };
+
+
+
+
+
+
+    // Calculation part
+    var originalData = [];
     var internalData = [];
+
+    var setData = function (x) {
+        var data;
+        if (x){
+            data = JSON.parse(JSON.stringify(x))
+        }else{
+            data = outputAllData2Array();
+        }
+        originalData = JSON.parse(JSON.stringify(data));
+        internalData = [];
+        inputReformat();
+    };
 
 
     var inputReformat = function () {
         internalData = [];
+        var i = 0;
         for (var t of originalData){
             if (t){
                 internalData.push(t);
+                setVueDataAtIndex(i, t)
             }else{
                 internalData.push([1,2,3,4,5,6,7,8,9]);
+                setVueDataAtIndex(i, "?")
             }
+            i+=1;
         }
     };
-    inputReformat();
 
     var outputData = function () {
         var output = [];
@@ -98,7 +278,12 @@ var SudokuDataset = function (data) {
             // console.log([i, d]);
             if (Array.isArray(d)){
                 output.push("?");
-            }else{
+            }else if(d == undefined)
+            {
+                output.push("?");
+            }
+            else
+                {
                 output.push(d.toString())
             }
         }
@@ -106,16 +291,21 @@ var SudokuDataset = function (data) {
         var s = "";
         for (var i = 0; i<=80 ; i++){
             s += output[i];
-            s += "_";
-            if ((i+1)%3 == 0){
-                s += '_'
-            }
-            if ((i+1)%9 == 0){
-                s += '\n'
-            }
+
             if ((i+1)%27 == 0){
-                s += '\n'
+                s += '<br><br>'
             }
+            else if ((i+1)%9 == 0){
+                s += '<br>'
+            }
+            else if ((i+1)%3 == 0){
+                s += '&nbsp&nbsp&nbsp&nbsp';
+            }
+            else{
+                s += "_";
+            }
+
+
 
         }
         return s
@@ -131,28 +321,27 @@ var SudokuDataset = function (data) {
     /* 0 <= int(blockNum) <= 8 */
 
     var index2coordinates = function (i) {
-        if (i<0 || i>80){
-            throw "Invalid index"
-        }
-        var rowNum, colNum;
-        rowNum = parseInt(i/9);
-        colNum = Math.round(i%9);
-
-        return [rowNum,colNum]
+        return [index2row(i), index2col(i)]
     };
 
     var index2row = function (i) {
-        return index2coordinates(i)[0]
+        if (i<0 || i>80){
+            throw "Invalid index"
+        }
+        return parseInt(i/9);
     };
 
     var index2col = function (i) {
-        return index2coordinates(i)[1]
+        if (i<0 || i>80){
+            throw "Invalid index"
+        }
+        return Math.round(i%9);
     };
 
     var index2block = function (i) {
         var rowNum,colNum,bx,by;
-        rowNum = index2coordinates(i)[0];
-        colNum = index2coordinates(i)[1];
+        rowNum = index2row(i);
+        colNum = index2col(i);
 
         bx = parseInt(rowNum/3);
         by = parseInt(colNum/3);
@@ -225,11 +414,25 @@ var SudokuDataset = function (data) {
         return res
     };
 
+    var getByIndexOLD = function (i) {
+        return internalData[i]
+    };
+
+    var setDataAtIndexOLD = function (i, x) {
+        internalData[i] = x;
+    };
+
     var getByIndex = function (i) {
         return internalData[i]
     };
 
     var setDataAtIndex = function (i, x) {
+
+        if (Array.isArray(x)){
+            setVueDataAtIndex(i, "?")
+        }else {
+            setVueDataAtIndex(i, x)
+        }
         internalData[i] = x;
     };
 
@@ -451,11 +654,11 @@ var SudokuDataset = function (data) {
     };
 
     var resultCheck = function () {
-        var newDate = new Date();
-        var timePassed = -timeMod.getTime()+newDate.getTime();
+
+        timePassed = -startTimestamp+getTime();
         timePassed = timePassed/1000;
         timePassed.toString();
-        var log = "Solve: " + solved() + "\nCorrect: " + correct() + "\nTime: " + timePassed + "s\nTried: "+ tryTimes + " times";
+        var log = "Solve: " + solved() + "\nCorrect: " + correct() + "\nTime: " + timePassed + "s\nGuessed: "+ tryTimes + " times";
 
         console.log(log);
     };
@@ -475,37 +678,50 @@ var SudokuDataset = function (data) {
     };
 
     function logToHTML() {
-        GUIContainer.innerText = outputData();
+        GUIContainer.innerHTML = outputData();
     }
 
-    simpleScan();
+    var autofill = function (){
+        statusChange("Calculating...");
 
-    if ( !solved() ){
-        advancedTry();
-    }
-    logToHTML();
+        startTimestamp = getTime();
 
+        simpleScan();
 
-    resultCheck();
+        setTimeout(autofillPart2, 1);
+    };
 
+    var autofillPart2 = function () {
+        if ( !solved() ){
+            advancedTry();
+        }
+
+        resultCheck();
+        statusChange("Done, it took " + timePassed + "s to calculate");
+        logToHTML();
+    };
 
 
 
     return {
+        GUIInt: GUIInit,
+        setData: setData,
         simpleScan: simpleScan,
         guessNextOne: guessNextOne,
         logToHTML: logToHTML,
         scanForInvalidValue: scanForInvalidValue,
         debug: debug,
-        solved: solved
+        solved: solved,
+        autofill: autofill
     }
 };
 
 
-var a = SudokuDataset(testingSudokuSet2);
+var a = SudokuDataset();
+a.GUIInt("sudoku");
 
-
-
+// a.logToHTML();
+// a.setData(testingSudokuSet3);
 
 
 
