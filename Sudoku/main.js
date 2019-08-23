@@ -131,11 +131,9 @@ var SudokuDataset = function () {
 
             if ([0,2,4,6,8].includes(index2block(i))){
                 backGroundColor = "white";
-                lineColor = "lightgrey";
             }
             else{
                 backGroundColor = "lightgrey";
-                lineColor = "white";
             }
 
             border  = "border: none; border-style: none; ";
@@ -384,7 +382,7 @@ var SudokuDataset = function () {
         var rowNum, colNum;
         rowNum = coordinate[0];
         colNum = coordinate[1];
-        if (rowNum<0 || colNum <0 || rowNum >8 || colNum >8){
+        if (rowNum < 0 || colNum < 0 || rowNum > 8 || colNum > 8){
             throw "Invalid coordinate"
         }
         return rowNum*9+colNum
@@ -471,12 +469,7 @@ var SudokuDataset = function () {
         var dataAtI = internalData[i];
         if (Array.isArray(dataAtI)){
             if (dataAtI.includes(x)){
-                for( var index = 0; index < dataAtI.length; index++){
-                    if ( dataAtI[index] === x) {
-                        dataAtI.splice(index, 1);
-                        break;
-                    }
-                }
+                dataAtI.splice(dataAtI.indexOf(x), 1);
             }
         }
     };
@@ -504,9 +497,10 @@ var SudokuDataset = function () {
     var convertAllOnlyPossibleValueToInt = function () {
         var changed = false;
         for (var i = 0; i<=80; i++){
-            if (Array.isArray(getByIndex(i))){
-                if (getByIndex(i).length === 1){
-                    setDataAtIndex(i, getByIndex(i)[0]);
+            var d = getByIndex(i);
+            if (Array.isArray(d)){
+                if (d.length === 1){
+                    setDataAtIndex(i, d[0]);
                     changed = true;
                 }
             }
@@ -522,13 +516,24 @@ var SudokuDataset = function () {
         var row = getRow(rowNum);
         var col = getCol(colNum);
         var block = getBlock(blockNum);
-        var all = row.concat(col).concat(block);
 
-        for (var value of all){
-            if (Array.isArray(value)){
 
+        // var allx = row.concat(col).concat(block);
+
+        var allx2 = [];
+        for (var x of [1,2,3,4,5,6,7,8,9]){
+            if (row.includes(x)){
+                allx2.push(x)
+            }else if (col.includes(x)){
+                allx2.push(x)
+            }else if (block.includes(x)){
+                allx2.push(x)
             }
-            else{
+        }
+        // console.log([allx, allx2]);
+
+        for (var value of allx2){
+            if (!Array.isArray(value)){
                 removeImpossibleValueAtIndex(i, value)
             }
         }
@@ -593,11 +598,43 @@ var SudokuDataset = function () {
         return true
     };
 
+    var findOnlyPossibleValue = function () {
+        var center = [1,4,7];
+        for (var i=0; i<81; i++){
+            var rowNum = index2row(i);
+            var colNum = index2col(i);
+
+            var d = getByIndex(i);
+
+            if (!Array.isArray(i)){
+                return false
+            }
+
+            if (center.includes(rowNum) && center.includes(colNum)){
+                var row1 = getRow(rowNum-1);
+                var col1 = getCol(colNum-1);
+                var row2 = getRow(rowNum+1);
+                var col2 = getCol(colNum+1);
+
+                for (var v of d){
+                    if (row1.includes(v)&&row2.includes(v)&&col1.includes(v)&&col2.includes(v)){
+                        setDataAtIndex(i, v);
+                        console.log("short cut find");
+                        break;
+                    }
+                }
+            }
+        }
+    };
+
     var simpleScan = function () {
-        for (var i =0; i<80; i++){
+        for (var i =0; i<65; i++){
             reduceAllImpossibleValue();
             convertAllOnlyPossibleValueToInt();
         }
+        //findOnlyPossibleValue();
+        //reduceAllImpossibleValue();
+        //convertAllOnlyPossibleValueToInt();
     };
 
     var moveLevel = 0;
@@ -627,7 +664,6 @@ var SudokuDataset = function () {
             var d = getByIndex(i);
             if (Array.isArray(d)){
                 if (d.length === shortestOption){
-
                     setDataAtIndex(i, d[chooseIndex]);
                     break;
                 }
@@ -659,7 +695,7 @@ var SudokuDataset = function () {
                 throw "Too many wrong attempt"
             }
 
-            simpleScan();
+            // simpleScan();
 
             var thisTimeInitialData = JSON.stringify(internalData);
             var len = getShortestOption();
@@ -755,8 +791,6 @@ var SudokuDataset = function () {
 var a = SudokuDataset();
 a.GUIInt("sudoku");
 
-// a.logToHTML();
-// a.setData(testingSudokuSet3);
 
 
 
