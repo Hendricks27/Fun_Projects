@@ -125,22 +125,52 @@ var SudokuDataset = function () {
             unit.setAttribute("maxlength", "1");
 
             unit.setAttribute("id", domID);
-            //unit.setAttribute("align", "center");
-
             unit.setAttribute("v-model", "num");
 
+            var backGroundColor, border, lineColor;
+
             if ([0,2,4,6,8].includes(index2block(i))){
-                unit.setAttribute("style", "background-color: orange; color: white; " +
-                    "width: 30px; height: 30px; border-color: white;" +
-                    "font-size: 18px; text-align: center;"
-                );
+                backGroundColor = "white";
+                lineColor = "lightgrey";
             }
             else{
-                unit.setAttribute("style", "background-color: grey; color: white; " +
-                    "width: 30px; height: 30px; border-color: white;" +
-                    "font-size: 18px; text-align: center;"
-                );
+                backGroundColor = "lightgrey";
+                lineColor = "white";
             }
+
+            border  = "border: none; border-style: none; ";
+            if ([0].includes(index2row(i))){
+                border += "border-top: 2px solid black; ";
+            }
+            else if ([3,6].includes(index2row(i))){
+                border += "border-top: 1px solid black; ";
+            }
+            else if ([8].includes(index2row(i))){
+                border += "border-top: 1px solid grey; ";
+                border += "border-bottom: 2px solid black; ";
+            }
+            else {
+                border += "border-top: 1px solid grey; ";
+            }
+
+            if ([0].includes(index2col(i))){
+                border += "border-left: 2px solid black; ";
+            }
+            else if ([3,6].includes(index2col(i))){
+                border += "border-left: 1px solid black; ";
+            }
+            else if ([8].includes(index2col(i))){
+                border += "border-left: 1px solid grey; ";
+                border += "border-right: 2px solid black; ";
+            }
+            else {
+                border += "border-left: 1px solid grey; ";
+            }
+
+            var unitCSS = `background-color: ${backGroundColor}; color: black; width: 35px; height: 35px; border-color: white; font-size: 23px; text-align: center; ${border}`;
+
+
+            unit.setAttribute("style", unitCSS);
 
             // unit.setAttribute("v-bind", "");
 
