@@ -266,8 +266,6 @@ var SudokuDataset = function () {
 
 
 
-
-
     // Calculation part
     var originalData = [];
     var internalData = [];
@@ -599,16 +597,9 @@ var SudokuDataset = function () {
     };
 
     var simpleScan = function () {
-        //findOnlyPossibleValue();
-        var c = 0;
         for (var i =0; i<70; i++){
             reduceAllImpossibleValue();
-            var f = convertAllOnlyPossibleValueToInt();
-
-            if (!f){
-                c+=1;
-            }
-            if (c > 1){
+            if(!convertAllOnlyPossibleValueToInt()){
                 break
             }
         }
