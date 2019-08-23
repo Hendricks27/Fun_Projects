@@ -199,9 +199,10 @@ var SudokuDataset = function () {
     };
 
     var calculate = function () {
+        setData();
         logToHTML();
         var temp = outputAllData2Array();
-        if (temp.filter(x => x == undefined).length > 60){
+        if (temp.filter(x => x == undefined).length > 65){
             alert("Please provide more values");
             return false
         }
@@ -699,6 +700,10 @@ var SudokuDataset = function () {
         resultCheck();
         statusChange("Done, it took " + timePassed + "s to calculate");
         logToHTML();
+
+        for (var i=0; i<81; i++){
+            setVueDataAtIndex(i, getByIndex(i));
+        }
     };
 
 
