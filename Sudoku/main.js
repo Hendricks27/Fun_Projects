@@ -598,43 +598,20 @@ var SudokuDataset = function () {
         return true
     };
 
-    var findOnlyPossibleValue = function () {
-        var center = [1,4,7];
-        for (var i=0; i<81; i++){
-            var rowNum = index2row(i);
-            var colNum = index2col(i);
-
-            var d = getByIndex(i);
-
-            if (!Array.isArray(i)){
-                return false
-            }
-
-            if (center.includes(rowNum) && center.includes(colNum)){
-                var row1 = getRow(rowNum-1);
-                var col1 = getCol(colNum-1);
-                var row2 = getRow(rowNum+1);
-                var col2 = getCol(colNum+1);
-
-                for (var v of d){
-                    if (row1.includes(v)&&row2.includes(v)&&col1.includes(v)&&col2.includes(v)){
-                        setDataAtIndex(i, v);
-                        console.log("short cut find");
-                        break;
-                    }
-                }
-            }
-        }
-    };
-
     var simpleScan = function () {
-        for (var i =0; i<65; i++){
-            reduceAllImpossibleValue();
-            convertAllOnlyPossibleValueToInt();
-        }
         //findOnlyPossibleValue();
-        //reduceAllImpossibleValue();
-        //convertAllOnlyPossibleValueToInt();
+        var c = 0;
+        for (var i =0; i<70; i++){
+            reduceAllImpossibleValue();
+            var f = convertAllOnlyPossibleValueToInt();
+
+            if (!f){
+                c+=1;
+            }
+            if (c > 1){
+                break
+            }
+        }
     };
 
     var moveLevel = 0;
