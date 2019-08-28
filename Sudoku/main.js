@@ -625,6 +625,71 @@ var SudokuDataset = function () {
         return shortestOption
     };
 
+    var getMostEffectiveOption = function () {
+        var res = [];
+        var maxScore = 0;
+
+        for (var i = 0; i<=80; i++){
+            var d = getByIndex(i);
+            if (Array.isArray(d)){
+                var score = 0;
+
+                var rowNum = index2row(i);
+                var colNum = index2col(i);
+                var blockNum = index2block(i);
+
+                var row = getRow(rowNum);
+                var col = getCol(colNum);
+                var block = getBlock(blockNum);
+
+                for (var colNumx in row){
+                    colNumx = parseInt(colNumx);
+                    var newi = 9*rowNum + colNumx;
+                    if (index2block(newi) == blockNum){
+                        continue
+                    }
+                    if (Array.isArray(getByIndex(newi))){
+                        score += 1;
+                    }
+
+                }
+                for (var rowNumx in col){
+                    rowNumx = parseInt(rowNumx);
+                    var newi = 9*rowNumx + colNum;
+                    if (index2block(newi) == blockNum){
+                        continue
+                    }
+                    if (Array.isArray(getByIndex(newi))){
+                        score += 1;
+                    }
+                }
+                for (var x of block){
+                    if (Array.isArray(x)){
+                        score+=1;
+                    }
+                }
+
+
+                if (score > maxScore){
+                    maxScore = score;
+                    res = [];
+                }
+
+                if (score == maxScore){
+                    // index, length
+                    res.push([i, d.length]);
+                }
+            }
+        }
+
+        res = res.sort(function (a,b) {
+            return a[1] - b[1]
+        });
+
+        return res[0]
+
+    };
+
 
     var guessNextOne = function (shortestOption, chooseIndex) {
 
@@ -666,11 +731,19 @@ var SudokuDataset = function () {
             // simpleScan();
 
             var thisTimeInitialData = JSON.stringify(internalData);
-            var len = getShortestOption();
+            //var len = getShortestOption();
             level += 1;
 
+            var temp = getMostEffectiveOption();
+            var len = temp[1];
+            var index = temp[0];
+
+
+
             for (var i=0; i<len; i++){
-                var x = guessNextOne(len, i);
+                //var x = guessNextOne(len, i);
+                // console.log(temp.concat(i).concat([level]));
+                setDataAtIndex(index, getByIndex(index)[i]);
                 simpleScan();
 
                 // console.log([x,": " ,i,"/",len]);
