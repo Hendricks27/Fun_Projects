@@ -731,17 +731,17 @@ var SudokuDataset = function () {
             // simpleScan();
 
             var thisTimeInitialData = JSON.stringify(internalData);
-            //var len = getShortestOption();
+            var len = getShortestOption();
             level += 1;
 
-            var temp = getMostEffectiveOption();
-            var len = temp[1];
-            var index = temp[0];
+            //var temp = getMostEffectiveOption();
+            //var len = temp[1];
+            //var index = temp[0];
 
 
 
             for (var i=0; i<len; i++){
-                //var x = guessNextOne(len, i);
+                var x = guessNextOne(len, i);
                 // console.log(temp.concat(i).concat([level]));
                 setDataAtIndex(index, getByIndex(index)[i]);
                 simpleScan();
