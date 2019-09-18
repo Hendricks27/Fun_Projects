@@ -743,7 +743,7 @@ var SudokuDataset = function () {
             for (var i=0; i<len; i++){
                 var x = guessNextOne(len, i);
                 // console.log(temp.concat(i).concat([level]));
-                setDataAtIndex(index, getByIndex(index)[i]);
+                //setDataAtIndex(index, getByIndex(index)[i]);
                 simpleScan();
 
                 // console.log([x,": " ,i,"/",len]);
